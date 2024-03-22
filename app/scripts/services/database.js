@@ -2,6 +2,7 @@
 couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q) {
   'use strict';
   var baseUrl;
+  var headers = {};
 
   return {
     setBaseUrl: function(url) {
@@ -10,6 +11,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
     checkSession: function() {
       var promise = $http({
         url: baseUrl + '/_session',
+        headers: headers,
         withCredentials: true
       });
       return promise.then(function(response){
@@ -32,6 +34,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
         withCredentials: true
       });
       return promise.then(function() {
+        headers = {'Authorization': 'Basic ' + btoa(options.username + ':' + options.password)};
         return options.username;
       }, function(response) {
         var error = new Error(response.data.reason);
@@ -44,6 +47,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
       var promise = $http({
         method: 'delete',
         url: baseUrl + '/_session',
+        headers: headers,
         withCredentials: true
       });
       return promise.catch(function(response) {
@@ -56,6 +60,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
     getUsers: function () {
       var promise = $http({
         url: baseUrl + '/_users/_all_docs?include_docs=true&startkey=%22org.couchdb.user:%22&endkey=%22org.couchdb.user:|%22',
+        headers: headers,
         withCredentials: true
       });
       return promise.then(function (response) {
@@ -72,6 +77,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
       var promise = $http({
         method: 'put',
         url: baseUrl + '/_users/' + encodeURIComponent(id),
+        headers: headers,
         data: {
           _id: id,
           name: options.username,
@@ -93,6 +99,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
       return $http({
         method: 'get',
         url: baseUrl + '/_users/' + encodeURIComponent(id),
+        headers: headers,
         withCredentials: true
       }).then(function(response) {
         var userObject = response.data;
@@ -108,6 +115,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
             $http({
               method: 'put',
               url: baseUrl + '/_users/' + encodeURIComponent(userObject._id),
+              headers: headers,
               data: userObject,
               withCredentials: true
             }),
@@ -118,6 +126,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
         return $http({
           method: 'put',
           url: baseUrl + '/_users/' + encodeURIComponent(id),
+          headers: headers,
           data: userObject,
           withCredentials: true
         });
@@ -134,6 +143,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
       return $http({
         method: 'get',
         url: baseUrl + '/_users/' + encodeURIComponent(id),
+        headers: headers,
         withCredentials: true
       }).then(function(response) {
         var userObject = response.data;
@@ -142,6 +152,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
         return $http({
           method: 'put',
           url: baseUrl + '/_users/' + encodeURIComponent(id),
+          headers: headers,
           data: userObject,
           withCredentials: true
         });
@@ -154,6 +165,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
       return $http({
         method: 'get',
         url: baseUrl + '/_all_dbs',
+        headers: headers,
         withCredentials: true
       }).then(function(response) {
         var getAllDbSecurityPromises = response.data.filter(function(dbName) {
@@ -163,6 +175,7 @@ couchDbUserManagementApp.service('database', ['$http', '$q', function ($http, $q
           return $http({
             method: 'get',
             url: baseUrl + '/'+dbName+'/_security',
+            headers: headers,
             withCredentials: true
           }).then(function(response) {
             var dbSecurity = response.data;
